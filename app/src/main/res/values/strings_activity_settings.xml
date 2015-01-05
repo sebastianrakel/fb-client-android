@@ -1,0 +1,14 @@
+<resources>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_hostname_display_name">Hostname</string>
+    <string name="pref_default_hostname_display_name">https://paste.xinu.at</string>
+
+    <string name="pref_apikey_display_name">Apikey</string>
+    <string name="pref_default_apikey_display_name"></string>
+</resources>

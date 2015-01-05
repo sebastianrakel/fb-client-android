@@ -24,7 +24,7 @@ import java.net.URI;
  */
 public class FilebinClient {
     private static String Version = "0.1";
-    private static String UserAgent = "fb-client-android/" + _Version;
+    private static String UserAgent = "fb-client-android/" + Version;
 
     private URI HostURI;
     private String Apikey;
