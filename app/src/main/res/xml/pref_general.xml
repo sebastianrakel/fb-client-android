@@ -22,4 +22,11 @@
         android:singleLine="true"
         android:maxLines="1" />
 
+    <Preference
+        android:key="getApikey"
+        android:text="Get Apikey"
+        android:summary="Get Apikey"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
 </PreferenceScreen>
