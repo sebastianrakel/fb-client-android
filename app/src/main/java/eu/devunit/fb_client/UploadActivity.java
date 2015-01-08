@@ -2,7 +2,9 @@ package eu.devunit.fb_client;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -56,12 +58,31 @@ import java.util.ArrayList;
 public class UploadActivity extends ActionBarActivity {
 
     ProgressDialog dialog = null;
-    FilebinClient fbClient = new FilebinClient();
+    FilebinClient fbClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload);
+
+        initFilebinClient();
+    }
+
+    private void initFilebinClient() {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(UploadActivity.this);
+
+        String apikey = settings.getString("apikey", "");
+        String hostname = settings.getString("hostname", getString(R.string.pref_default_hostname_display_name));
+
+        fbClient = new FilebinClient();
+
+        try {
+            fbClient.setHostURI(new URI(hostname));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        fbClient.setApikey(apikey);
     }
 
 
@@ -77,7 +98,7 @@ public class UploadActivity extends ActionBarActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = imtem.getItemId();
+        int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
@@ -96,14 +117,23 @@ public class UploadActivity extends ActionBarActivity {
 
         new Thread(new Runnable() {
             public void run() {
+                String pasteURL = "";
+
                 try {
-                    fbClient.setHostURI(new URI("https://paste.xinu.at"));
-                    fbClient.uploadText(editText.getText().toString());
+                    pasteURL = fbClient.uploadText(editText.getText().toString());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    dialog.dismiss();
                 }
+                dialog.dismiss();
+
+                openPostUpload(pasteURL);
             }
         }).start();
+    }
+
+    private void openPostUpload(String pasteURL) {
+        Intent intent = new Intent(UploadActivity.this, PostUploadActivity.class);
+        intent.putExtra("paste_url", pasteURL);
+        UploadActivity.this.startActivity(intent);
     }
 }

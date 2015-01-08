@@ -1,7 +1,9 @@
 package eu.devunit.fb_client;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -70,6 +72,21 @@ public class SettingsActivity extends PreferenceActivity {
         // to reflect the new value, per the Android Design guidelines.
         bindPreferenceSummaryToValue(findPreference("hostname"));
         bindPreferenceSummaryToValue(findPreference("apikey"));
+
+        Preference button = (Preference)findPreference("getApikey");
+        button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference arg0) {
+                GetApikey("");
+                return true;
+            }
+        });
+    }
+
+    private void GetApikey(String hostname) {
+        Intent intent = new Intent(SettingsActivity.this, LoginActivity.class);
+        intent.putExtra("hostname", getPreference(findPreference("hostname")));
+        SettingsActivity.this.startActivityForResult(intent, 1);
     }
 
     /**
@@ -152,6 +169,20 @@ public class SettingsActivity extends PreferenceActivity {
                         .getString(preference.getKey(), ""));
     }
 
+    private static String getPreference(Preference preference) {
+        return PreferenceManager
+                .getDefaultSharedPreferences(preference.getContext())
+                .getString(preference.getKey(), "");
+    }
+
+    private static void setPreference(Preference preference, String value) {
+        PreferenceManager
+                .getDefaultSharedPreferences(preference.getContext())
+                .edit()
+                .putString(preference.getKey(), value)
+                .commit();
+    }
+
     /**
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
@@ -169,6 +200,22 @@ public class SettingsActivity extends PreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("hostname"));
             bindPreferenceSummaryToValue(findPreference("apikey"));
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case (1) : {
+                if (resultCode == Activity.RESULT_OK) {
+                    String apikey = data.getStringExtra("apikey");
+
+                    setPreference(findPreference("apikey"), apikey);
+                    bindPreferenceSummaryToValue(findPreference("apikey"));
+                }
+                break;
+            }
         }
     }
 }
