@@ -6,11 +6,19 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.params.HttpParams;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,6 +26,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.security.cert.CertificateException;
+import javax.security.cert.X509Certificate;
 
 /**
  * Created by sebastian on 1/4/15.
@@ -45,8 +59,8 @@ public class FilebinClient {
         Apikey = apikey;
     }
 
-    public String generateApikey(String username, String password) {
-        HttpClient httpClient = new DefaultHttpClient();
+    public String generateApikey(String username, String password, String comment) {
+        HttpClient httpClient = getHttpsClient(new DefaultHttpClient());
         httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, UserAgent);
 
         HttpPost httpPost = new HttpPost(HostURI.toString() + "/user/create_apikey");
@@ -57,6 +71,10 @@ public class FilebinClient {
 
         builder.addTextBody("username", username);
         builder.addTextBody("password", password);
+
+        if(!comment.isEmpty()) {
+            builder.addTextBody("comment", comment);
+        }
 
         HttpEntity httpEntity = builder.build();
 
@@ -85,16 +103,23 @@ public class FilebinClient {
     }
 
     public String uploadFile(String[] filenames) {
-        HttpClient httpClient = new DefaultHttpClient();
+        HttpClient httpClient = getHttpsClient(new DefaultHttpClient());
         httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, UserAgent);
 
-        HttpPost httpPost = new HttpPost(HostURI.toString() + "/file/do_upload");
+        HttpPost httpPost;
+        httpPost = new HttpPost(HostURI.toString() + "/file/do_upload");
 
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
         builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 
         builder.addTextBody("apikey", getApikey());
+
+        boolean is_multipaste = filenames.length > 1;
+
+        if(is_multipaste) {
+            builder.addTextBody("multipaste","true");
+        }
 
         for(int i=0; i<filenames.length; i++) {
 
@@ -119,7 +144,12 @@ public class FilebinClient {
             e.printStackTrace();
         }
 
-        return content;
+        if(is_multipaste) {
+            String[] fileNames = content.split(" ");
+            return fileNames[fileNames.length - 1];
+        } else {
+            return content;
+        }
     }
 
     private static String getContent(HttpResponse response) throws IOException {
@@ -154,5 +184,38 @@ public class FilebinClient {
         }
 
         return "";
+    }
+
+    public static HttpClient getHttpsClient(HttpClient client) {
+        try{
+            X509TrustManager x509TrustManager = new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
+
+                }
+
+                @Override
+                public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
+
+                }
+
+                @Override
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return new java.security.cert.X509Certificate[0];
+                }
+            };
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{x509TrustManager}, null);
+            SSLSocketFactory sslSocketFactory = new ExSSLSocketFactory(sslContext);
+            sslSocketFactory.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+            ClientConnectionManager clientConnectionManager = client.getConnectionManager();
+            SchemeRegistry schemeRegistry = clientConnectionManager.getSchemeRegistry();
+            schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+            schemeRegistry.register(new Scheme("https", sslSocketFactory, 443));
+            return new DefaultHttpClient(clientConnectionManager, client.getParams());
+        } catch (Exception ex) {
+            return null;
+        }
     }
 }

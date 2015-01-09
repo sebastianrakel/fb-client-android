@@ -50,6 +50,8 @@ public class SettingsActivity extends PreferenceActivity {
         setupSimplePreferencesScreen();
     }
 
+
+
     /**
      * Shows the simplified settings UI if the device configuration if the
      * device configuration dictates that a simplified, single-pane UI should be
@@ -88,6 +90,8 @@ public class SettingsActivity extends PreferenceActivity {
         intent.putExtra("hostname", getPreference(findPreference("hostname")));
         SettingsActivity.this.startActivityForResult(intent, 1);
     }
+
+
 
     /**
      * {@inheritDoc}

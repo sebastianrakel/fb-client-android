@@ -17,7 +17,7 @@
         android:inputType="text|textMultiLine"
         android:enabled="true"
         android:editable="true"
-        android:lines="8"
+        android:lines="4"
         android:linksClickable="true" />
 
     <Button
@@ -35,14 +35,14 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Search File"
+        android:text="Add File"
         android:id="@+id/btnSearchFile"
-        android:layout_below="@+id/btnUploadText"
+        android:layout_above="@+id/btnUploadFile"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="82dp"
-        android:layout_alignRight="@+id/btnUploadText"
-        android:layout_alignEnd="@+id/btnUploadText" />
+        android:layout_alignRight="@+id/lblFilename"
+        android:layout_alignEnd="@+id/lblFilename"
+        android:onClick="onBtnAddFileClick" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -58,11 +58,22 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Upload File"
+        android:text="Upload File(s)"
         android:id="@+id/btnUploadFile"
-        android:layout_below="@+id/lblFilename"
-        android:layout_alignRight="@+id/lblFilename"
-        android:layout_alignEnd="@+id/lblFilename"
+        android:onClick="onBtnUploadFileClick"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/lblFilename"
+        android:layout_alignEnd="@+id/lblFilename" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/fileListView"
+        android:layout_above="@+id/btnSearchFile"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/btnUploadText"
+        android:longClickable="true" />
 </RelativeLayout>

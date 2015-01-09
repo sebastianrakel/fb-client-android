@@ -1,11 +1,15 @@
 package eu.devunit.fb_client;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class PostUploadActivity extends ActionBarActivity {
@@ -27,8 +31,6 @@ public class PostUploadActivity extends ActionBarActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_post_upload, menu);
         return true;
     }
 
@@ -45,5 +47,13 @@ public class PostUploadActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onCopyToClipboardButtonClick(View view) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("paste_url", mURL);
+        clipboard.setPrimaryClip(clip);
+
+        Toast.makeText(this, "Copied " + mURL + " to clipboard!", Toast.LENGTH_LONG).show();
     }
 }
