@@ -15,6 +15,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -30,13 +31,21 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 
-public class UploadActivity extends ActionBarActivity {
+public class UploadActivity extends ActionBarActivity
+    implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     ProgressDialog dialog = null;
     FilebinClient fbClient;
     ArrayList<Uri> uploadFiles;
     ArrayList<String> fileNames;
     ArrayAdapter<String> adapter;
+
+    /**
+     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
+     */
+    private NavigationDrawerFragment mNavigationDrawerFragment;
+
+    private CharSequence mTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -381,5 +390,10 @@ public class UploadActivity extends ActionBarActivity {
      */
     public static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    @Override
+    public void onNavigationDrawerItemSelected(int position) {
+
     }
 }

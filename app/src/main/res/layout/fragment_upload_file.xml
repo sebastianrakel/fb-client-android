@@ -1,0 +1,35 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context="eu.devunit.fb_client.UploadFileFragment">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
+        android:weightSum="1">
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="219dp"
+            android:id="@+id/list_uploadFiles"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0.94" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/button_add_file"
+            android:id="@+id/button_addFile"
+            android:layout_gravity="center_horizontal"
+            android:onClick="onButton_AddFileClick" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/button_upload_files"
+            android:id="@+id/button_uploadFile"
+            android:layout_gravity="center_horizontal"
+            android:onClick="onButton_UploadFileClick" />
+    </LinearLayout>
+</FrameLayout>
