@@ -1,6 +1,7 @@
 package eu.devunit.fb_client;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -13,7 +14,11 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 
+import java.util.ArrayList;
+
 import eu.devunit.fb_client.dummy.DummyContent;
+import eu.devunit.fb_client.filebin.HistoryAnswer;
+import eu.devunit.fb_client.filebin.HistoryItem;
 
 /**
  * A fragment representing a list of Items.
@@ -25,17 +30,16 @@ import eu.devunit.fb_client.dummy.DummyContent;
  * interface.
  */
 public class HistoryFragment extends Fragment implements AbsListView.OnItemClickListener {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     private OnFragmentInteractionListener mListener;
+
+    private static final String ARG_POSITION = "position";
+
+    private int mPosition;
+    private ArrayList<HistoryItem> items;
+
+    private MainActivity mainActivity;
+
+    private ProgressDialog dialog = null;
 
     /**
      * The fragment's ListView/GridView.
@@ -46,15 +50,15 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
-    private ListAdapter mAdapter;
+    ArrayList<String> historyItemNames;
+    private ArrayAdapter<String> mAdapter;
 
-    // TODO: Rename and change types of parameters
-    public static HistoryFragment newInstance(String param1, String param2) {
+    public static HistoryFragment newInstance(int position, MainActivity mainActivity) {
         HistoryFragment fragment = new HistoryFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putInt(ARG_POSITION, position);
         fragment.setArguments(args);
+        fragment.setAdapter(mainActivity);
         return fragment;
     }
 
@@ -65,18 +69,55 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
     public HistoryFragment() {
     }
 
+    public void setAdapter(MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+
         }
 
-        // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
+        items = new ArrayList<HistoryItem>();
+        historyItemNames = new ArrayList<>();
+        mAdapter = new ArrayAdapter<String>(this.mainActivity,
+                android.R.layout.simple_list_item_1, android.R.id.text1, historyItemNames);
+
+        getHistory();
+    }
+
+    private void getHistory() {
+        dialog = ProgressDialog.show(this.mainActivity, "", "Uploading file...", true);
+        new Thread(new Runnable() {
+            public void run() {
+                String pasteURL = "";
+
+                ArrayList<HistoryItem> items = new ArrayList<HistoryItem>();
+
+                try {
+                    HistoryAnswer historyAnswer = mainActivity.getFbClient().getHistory();
+
+                    for(HistoryItem historyItem : historyAnswer.getItems()) {
+                        historyItemNames.add(historyItem.getFilename());
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
+
+                dialog.dismiss();
+            }
+        }).start();
     }
 
     @Override

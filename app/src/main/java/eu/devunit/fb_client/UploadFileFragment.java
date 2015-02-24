@@ -51,7 +51,6 @@ public class UploadFileFragment extends Fragment {
      * @param position Position
      * @return A new instance of fragment UploadFileFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static UploadFileFragment newInstance(int position, MainActivity mainActivity) {
         UploadFileFragment fragment = new UploadFileFragment();
         Bundle args = new Bundle();
@@ -126,7 +125,6 @@ public class UploadFileFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);
     }
 
@@ -187,23 +185,21 @@ public class UploadFileFragment extends Fragment {
         return filePaths.toArray(new String[uploadFiles.size()]);
     }
 
-
-
     public void uploadFiles() {
         dialog = ProgressDialog.show(this.mainActivity, "", "Uploading file...", true);
         new Thread(new Runnable() {
             public void run() {
-                String pasteURL = "";
+            String pasteURL = "";
 
-                try {
-                    pasteURL = mainActivity.getFbClient().uploadFile(getUploadFilePaths());
-                    ClearUploadList();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                dialog.dismiss();
+            try {
+                pasteURL = mainActivity.getFbClient().uploadFile(getUploadFilePaths());
+                ClearUploadList();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            dialog.dismiss();
 
-                mainActivity.openPostUpload(pasteURL);
+            mainActivity.openPostUpload(pasteURL);
             }
         }).start();
     }

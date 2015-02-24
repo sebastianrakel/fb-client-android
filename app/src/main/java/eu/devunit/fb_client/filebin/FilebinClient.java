@@ -1,4 +1,4 @@
-package eu.devunit.fb_client;
+package eu.devunit.fb_client.filebin;
 
 import android.os.Environment;
 
@@ -15,10 +15,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
-import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpParams;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,8 +27,8 @@ import java.net.URI;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import javax.security.cert.CertificateException;
-import javax.security.cert.X509Certificate;
+
+import eu.devunit.fb_client.ExSSLSocketFactory;
 
 /**
  * Created by sebastian on 1/4/15.
@@ -40,8 +37,11 @@ public class FilebinClient {
     private static String Version = "0.1";
     private static String UserAgent = "fb-client-android/" + Version;
 
+    private static String ApiVersion = "v1.0.0";
+
     private URI HostURI;
     private String Apikey;
+
 
     public URI getHostURI() {
         return HostURI;
@@ -58,6 +58,8 @@ public class FilebinClient {
     public void setApikey(String apikey) {
         Apikey = apikey;
     }
+
+
 
     public String generateApikey(String username, String password, String comment) {
         HttpClient httpClient = getHttpsClient(new DefaultHttpClient());
@@ -92,6 +94,10 @@ public class FilebinClient {
         }
 
         return content;
+    }
+
+    private String getApiUri() {
+        return HostURI.toString() + "/api/" + ApiVersion;
     }
 
     public String uploadText(String text) {
@@ -150,6 +156,40 @@ public class FilebinClient {
         } else {
             return content;
         }
+    }
+
+    public HistoryAnswer getHistory() {
+        HttpClient httpClient = getHttpsClient(new DefaultHttpClient());
+        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, UserAgent);
+
+        HttpPost httpPost;
+        httpPost = new HttpPost(getApiUri() + "/file/history");
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+
+        builder.addTextBody("apikey", getApikey());
+
+        HttpEntity httpEntity = builder.build();
+
+        httpPost.setEntity(httpEntity);
+        HttpResponse response = null;
+        String content = "";
+
+        try {
+            response = httpClient.execute(httpPost);
+            content = FilebinClient.getContent(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(content.length() > 0) {
+            HistoryAnswer historyAnswer = new HistoryAnswer(content);
+            return historyAnswer;
+        }
+
+        return null;
     }
 
     private static String getContent(HttpResponse response) throws IOException {
