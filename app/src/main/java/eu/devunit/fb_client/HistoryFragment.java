@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import eu.devunit.fb_client.dummy.DummyContent;
 import eu.devunit.fb_client.filebin.HistoryAnswer;
 import eu.devunit.fb_client.filebin.HistoryItem;
 
@@ -158,7 +157,7 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            //mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
         }
     }
 
