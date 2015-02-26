@@ -1,0 +1,62 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="?android:attr/listPreferredItemHeight"
+    android:padding="6dip" >
+
+    <TextView
+        android:id="@+id/id"
+        android:layout_width="80dip"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:gravity="center_vertical"
+        android:text="id:"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/filename"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_toRightOf="@+id/id"
+        android:gravity="center_vertical"
+        android:text="filename"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/mimetype"
+        android:layout_width="130dip"
+        android:layout_height="26dip"
+        android:layout_alignParentBottom="true"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:text="Type: "
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/filesize"
+        android:layout_width="90dip"
+        android:layout_height="26dip"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@id/mimetype"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:text="Size: "
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="150dip"
+        android:layout_height="26dip"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@id/filesize"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:text="Date: "
+        android:textSize="12sp" />
+
+
+
+</RelativeLayout> 

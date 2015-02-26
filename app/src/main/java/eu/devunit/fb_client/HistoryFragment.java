@@ -2,6 +2,8 @@ package eu.devunit.fb_client;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -14,6 +16,7 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 
+import java.net.URI;
 import java.util.ArrayList;
 
 import eu.devunit.fb_client.filebin.HistoryAnswer;
@@ -28,7 +31,7 @@ import eu.devunit.fb_client.filebin.HistoryItem;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class HistoryFragment extends Fragment implements AbsListView.OnItemClickListener {
+public class HistoryFragment extends Fragment implements AbsListView.OnItemClickListener, AbsListView.OnItemLongClickListener {
     private OnFragmentInteractionListener mListener;
 
     private static final String ARG_POSITION = "position";
@@ -49,8 +52,8 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
-    ArrayList<String> historyItemNames;
-    private ArrayAdapter<String> mAdapter;
+
+    private HistoryArrayAdapter mAdapter;
 
     public static HistoryFragment newInstance(int position, MainActivity mainActivity) {
         HistoryFragment fragment = new HistoryFragment();
@@ -80,27 +83,24 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
 
         }
 
+
         items = new ArrayList<HistoryItem>();
-        historyItemNames = new ArrayList<>();
-        mAdapter = new ArrayAdapter<String>(this.mainActivity,
-                android.R.layout.simple_list_item_1, android.R.id.text1, historyItemNames);
+        mAdapter = new HistoryArrayAdapter(this.mainActivity, R.layout.history_listview_item, items);
 
         getHistory();
     }
 
     private void getHistory() {
-        dialog = ProgressDialog.show(this.mainActivity, "", "Uploading file...", true);
+        dialog = ProgressDialog.show(this.mainActivity, "", "Loading history ...", true);
         new Thread(new Runnable() {
             public void run() {
                 String pasteURL = "";
-
-                ArrayList<HistoryItem> items = new ArrayList<HistoryItem>();
 
                 try {
                     HistoryAnswer historyAnswer = mainActivity.getFbClient().getHistory();
 
                     for(HistoryItem historyItem : historyAnswer.getItems()) {
-                        historyItemNames.add(historyItem.getFilename());
+                        items.add(historyItem);
                     }
 
                 } catch (Exception e) {
@@ -131,6 +131,8 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
 
+        mListView.setOnItemLongClickListener(this);
+
         return view;
     }
 
@@ -155,11 +157,15 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            //mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            HistoryItem historyItem = items.get(position);
+
+            String url = this.mainActivity.getFbClient().getHostURI() + "/" + historyItem.getId() + "/";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
         }
     }
+
 
     /**
      * The default content for this Fragment has a TextView that is shown when
@@ -172,6 +178,17 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
         if (emptyView instanceof TextView) {
             ((TextView) emptyView).setText(emptyText);
         }
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        if (null != mListener) {
+            // Notify the active callbacks interface (the activity, if the
+            // fragment is attached to one) that an item has been selected.
+            //mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+        }
+
+        return true;
     }
 
     /**
