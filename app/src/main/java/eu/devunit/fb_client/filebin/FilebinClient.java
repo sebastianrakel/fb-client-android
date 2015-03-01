@@ -28,8 +28,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import eu.devunit.fb_client.ExSSLSocketFactory;
-
 /**
  * Created by sebastian on 1/4/15.
  */

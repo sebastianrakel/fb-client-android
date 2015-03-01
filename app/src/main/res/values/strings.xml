@@ -4,16 +4,21 @@
     <string name="app_name">fb-client</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_post_upload">Post Upload</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main">fb-client</string>
     <string name="title_UploadFile">Upload File(s)</string>
     <string name="title_UploadText">Upload Text</string>
     <string name="title_History">History</string>
     <string name="title_Settings">Settings</string>
+    <string name="title_Test">Test</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="title_activity_test">testActivity</string>
 
     <string name="hello_world">Hello world!</string>
+
+    <string name="progress_upload_file">Uploading file(s)...</string>
+    <string name="progress_upload_text">Uploading text...</string>
+    <string name="progress_history">Loading history...</string>
 
     <string name="button_upload_files">Upload File(s)</string>
     <string name="button_add_file">Add File</string>

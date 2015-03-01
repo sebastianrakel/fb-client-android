@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * Created by sebastian on 2/23/15.
  */
-public class HistoryItem {
+public class HistoryItem implements Comparable<HistoryItem> {
     private String id;
     private String filename;
     private String mimetype;
@@ -58,7 +58,7 @@ public class HistoryItem {
     }
 
     public String getHumanReadableFilesize() {
-        boolean si = true;
+        boolean si = false;
         int unit = si ? 1000 : 1024;
         if (filesize < unit) return filesize + " B";
         int exp = (int) (Math.log(filesize) / Math.log(unit));
@@ -69,5 +69,10 @@ public class HistoryItem {
     @Override
     public String toString() {
         return id;
+    }
+
+    @Override
+    public int compareTo(HistoryItem historyItem) {
+        return historyItem.getHumanReadableDate().compareTo(getHumanReadableDate());
     }
 }

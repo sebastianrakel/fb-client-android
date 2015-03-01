@@ -1,4 +1,4 @@
-package eu.devunit.fb_client;
+package eu.devunit.fb_client.fragments;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -11,14 +11,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
 
-import java.net.URI;
 import java.util.ArrayList;
 
+import eu.devunit.fb_client.MainActivity;
+import eu.devunit.fb_client.R;
+import eu.devunit.fb_client.adapter.HistoryArrayAdapter;
 import eu.devunit.fb_client.filebin.HistoryAnswer;
 import eu.devunit.fb_client.filebin.HistoryItem;
 
@@ -39,8 +40,6 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
     private int mPosition;
     private ArrayList<HistoryItem> items;
 
-    private MainActivity mainActivity;
-
     private ProgressDialog dialog = null;
 
     /**
@@ -55,12 +54,11 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
 
     private HistoryArrayAdapter mAdapter;
 
-    public static HistoryFragment newInstance(int position, MainActivity mainActivity) {
+    public static HistoryFragment newInstance(int position) {
         HistoryFragment fragment = new HistoryFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_POSITION, position);
         fragment.setArguments(args);
-        fragment.setAdapter(mainActivity);
         return fragment;
     }
 
@@ -69,10 +67,6 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
      * fragment (e.g. upon screen orientation changes).
      */
     public HistoryFragment() {
-    }
-
-    public void setAdapter(MainActivity mainActivity) {
-        this.mainActivity = mainActivity;
     }
 
     @Override
@@ -85,16 +79,16 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
 
 
         items = new ArrayList<HistoryItem>();
-        mAdapter = new HistoryArrayAdapter(this.mainActivity, R.layout.history_listview_item, items);
+        mAdapter = new HistoryArrayAdapter(getActivity(), R.layout.history_listview_item, items);
 
         getHistory();
     }
 
     private void getHistory() {
-        dialog = ProgressDialog.show(this.mainActivity, "", "Loading history ...", true);
+        dialog = ProgressDialog.show(getActivity(), "", getString(R.string.progress_history), true);
         new Thread(new Runnable() {
             public void run() {
-                String pasteURL = "";
+                MainActivity mainActivity = (MainActivity) getActivity();
 
                 try {
                     HistoryAnswer historyAnswer = mainActivity.getFbClient().getHistory();
@@ -158,8 +152,9 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
             HistoryItem historyItem = items.get(position);
+            MainActivity mainActivity = (MainActivity) getActivity();
 
-            String url = this.mainActivity.getFbClient().getHostURI() + "/" + historyItem.getId() + "/";
+            String url = mainActivity.getFbClient().getHostURI() + "/" + historyItem.getId() + "/";
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setData(Uri.parse(url));
             startActivity(i);

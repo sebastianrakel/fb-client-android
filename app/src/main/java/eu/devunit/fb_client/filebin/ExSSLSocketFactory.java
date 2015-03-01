@@ -1,4 +1,4 @@
-package eu.devunit.fb_client;
+package eu.devunit.fb_client.filebin;
 
 /**
  * Created by sebastian on 1/9/15.

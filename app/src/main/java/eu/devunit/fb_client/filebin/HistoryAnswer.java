@@ -7,8 +7,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import javax.net.ssl.HostnameVerifier;
 
 /**
  * Created by sebastian on 2/23/15.
@@ -33,6 +37,8 @@ public class HistoryAnswer extends Answer {
 
                 items.add(new HistoryItem(value));
             }
+
+            Collections.sort(items);
         } catch (JSONException e) {
             e.printStackTrace();
         }

@@ -1,4 +1,4 @@
-package eu.devunit.fb_client;
+package eu.devunit.fb_client.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,6 +10,7 @@ import android.widget.TextView;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import eu.devunit.fb_client.R;
 import eu.devunit.fb_client.filebin.HistoryItem;
 
 /**
@@ -41,11 +42,11 @@ public class HistoryArrayAdapter extends ArrayAdapter<HistoryItem> {
 
         HistoryItem historyItem = (HistoryItem) objects.get(position);
 
-        id_textView.setText("id: " + historyItem.getId());
+        id_textView.setText(historyItem.getId());
         filename_textView.setText(historyItem.getFilename());
-        type_textView.setText("type: " + historyItem.getMimetype());
-        size_textView.setText("size: " + historyItem.getHumanReadableFilesize());
-        date_textView.setText("date: " +  new SimpleDateFormat("yyyy-MM-dd HH:mm").format(historyItem.getHumanReadableDate()));
+        type_textView.setText(historyItem.getMimetype());
+        size_textView.setText(historyItem.getHumanReadableFilesize());
+        date_textView.setText(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(historyItem.getHumanReadableDate()));
 
         return rowView;
     }

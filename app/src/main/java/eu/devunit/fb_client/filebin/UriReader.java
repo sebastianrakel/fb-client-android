@@ -1,4 +1,4 @@
-package eu.devunit.fb_client;
+package eu.devunit.fb_client.filebin;
 
 import android.content.ContentUris;
 import android.content.Context;

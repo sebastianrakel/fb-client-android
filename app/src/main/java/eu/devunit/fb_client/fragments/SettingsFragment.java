@@ -1,4 +1,4 @@
-package eu.devunit.fb_client;
+package eu.devunit.fb_client.fragments;
 
 import android.app.Activity;
 import android.net.Uri;
@@ -7,6 +7,8 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import eu.devunit.fb_client.R;
 
 
 /**

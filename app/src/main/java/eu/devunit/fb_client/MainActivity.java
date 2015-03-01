@@ -17,17 +17,21 @@ import android.support.v4.widget.DrawerLayout;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import eu.devunit.fb_client.filebin.FilebinClient;
+import eu.devunit.fb_client.fragments.HistoryFragment;
+import eu.devunit.fb_client.fragments.TestFragment;
+import eu.devunit.fb_client.fragments.UploadFileFragment;
+import eu.devunit.fb_client.fragments.UploadTextFragment;
 
 
 public class MainActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
                    HistoryFragment.OnFragmentInteractionListener,
                    UploadFileFragment.OnFragmentInteractionListener,
-                   UploadTextFragment.OnFragmentInteractionListener {
-
-
+                   UploadTextFragment.OnFragmentInteractionListener,
+                   TestFragment.OnFragmentInteractionListener {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -60,6 +64,21 @@ public class MainActivity extends ActionBarActivity
         initFilebinClient();
 
         setFragment(0);
+
+        Bundle bundle = getIntent().getExtras();
+
+        if(getIntent().getAction() == Intent.ACTION_SEND) {
+            Uri uri = (Uri)bundle.get(Intent.EXTRA_STREAM);
+            ((UploadFileFragment) activeFragment).AddFileToUploadList(uri);
+        }
+
+        if (getIntent().getAction() == Intent.ACTION_SEND_MULTIPLE) {
+            ArrayList<Uri> uris = (ArrayList<Uri>)bundle.get(Intent.EXTRA_STREAM);
+
+            for(Uri uri : uris) {
+                ((UploadFileFragment) activeFragment).AddFileToUploadList(uri);
+            }
+        }
     }
 
     @Override
@@ -78,7 +97,7 @@ public class MainActivity extends ActionBarActivity
         switch (position) {
             case 0:
                 mTitle = getString(R.string.title_UploadFile);
-                fragment = UploadFileFragment.newInstance(position, this);
+                fragment = UploadFileFragment.newInstance(position);
                 break;
             case 1:
                 mTitle = getString(R.string.title_UploadText);
@@ -86,7 +105,7 @@ public class MainActivity extends ActionBarActivity
                 break;
             case 2:
                 mTitle = getString(R.string.title_History);
-                fragment = HistoryFragment.newInstance(position, this);
+                fragment = HistoryFragment.newInstance(position);
                 break;
             case 3:
                 mTitle = getString(R.string.title_Settings);
@@ -94,6 +113,10 @@ public class MainActivity extends ActionBarActivity
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 MainActivity.this.startActivityForResult(intent, 1);
 
+                break;
+            case 4:
+                mTitle = getString(R.string.title_Test);
+                fragment = TestFragment.newInstance("", "");
                 break;
         }
 
@@ -138,8 +161,11 @@ public class MainActivity extends ActionBarActivity
     }
 
     public void onButton_UploadFileClick(View view) {
-        UploadFileFragment uploadFileFragment = (UploadFileFragment) activeFragment;
-        uploadFileFragment.uploadFiles();
+        ((UploadFileFragment) activeFragment).uploadFiles();
+    }
+
+    public void onButton_UploadTextClick(View view) {
+        ((UploadTextFragment) activeFragment).uploadText();
     }
 
     public void onButton_AddFileClick(View view) {

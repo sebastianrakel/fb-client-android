@@ -1,24 +1,25 @@
-package eu.devunit.fb_client;
+package eu.devunit.fb_client.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 
 import java.io.File;
 import java.util.ArrayList;
+
+import eu.devunit.fb_client.MainActivity;
+import eu.devunit.fb_client.R;
+import eu.devunit.fb_client.filebin.UriReader;
 
 
 /**
@@ -36,8 +37,6 @@ public class UploadFileFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    private MainActivity mainActivity;
-
     private ProgressDialog dialog = null;
 
     ArrayList<Uri> uploadFiles;
@@ -51,12 +50,11 @@ public class UploadFileFragment extends Fragment {
      * @param position Position
      * @return A new instance of fragment UploadFileFragment.
      */
-    public static UploadFileFragment newInstance(int position, MainActivity mainActivity) {
+    public static UploadFileFragment newInstance(int position) {
         UploadFileFragment fragment = new UploadFileFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_POSITION, position);
         fragment.setArguments(args);
-        fragment.setAdapter(mainActivity);
         return fragment;
     }
 
@@ -64,14 +62,13 @@ public class UploadFileFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public void setAdapter(MainActivity mainActivity) {
-        this.mainActivity = mainActivity;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         if (getArguments() != null) {
+            InitUploadList();
         }
     }
 
@@ -81,8 +78,11 @@ public class UploadFileFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_upload_file, container, false);
 
-        ClearUploadList();
-        uploadFileAdapter = new ArrayAdapter<String>(this.mainActivity, android.R.layout.simple_list_item_1, uploadFileNames);
+        for(Uri uri : uploadFiles) {
+            uploadFileNames.add(new File(UriReader.GetPath(getActivity(), uri)).getName());
+        }
+
+        uploadFileAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, uploadFileNames);
 
         final ListView fileListView = (ListView) view.findViewById(R.id.list_uploadFiles);
         fileListView.setAdapter(uploadFileAdapter);
@@ -129,19 +129,40 @@ public class UploadFileFragment extends Fragment {
     }
 
     public void AddFileToUploadList(Uri uri) {
+        if(uploadFiles == null) {
+            ClearUploadList();
+        }
+
         uploadFiles.add(uri);
-        uploadFileNames.add(new File(UriReader.GetPath(this.mainActivity, uri)).getName());
-        uploadFileAdapter.notifyDataSetChanged();
+
+        if(uploadFileAdapter != null) {
+            uploadFileNames.add(new File(UriReader.GetPath(getActivity(), uri)).getName());
+            uploadFileAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public void InitUploadList() {
+        if(uploadFiles == null) {
+            uploadFiles = new ArrayList<Uri>();
+        }
+
+        if(uploadFileNames == null) {
+            uploadFileNames = new ArrayList<>();
+        }
     }
 
     public void ClearUploadList() {
         uploadFiles = new ArrayList<Uri>();
         uploadFileNames = new ArrayList<>();
+
+        if(uploadFileAdapter != null) {
+            uploadFileAdapter.notifyDataSetChanged();
+        }
     }
 
     private void DeleteFromUploadList(String deleteFileName) {
         for(Uri uri : uploadFiles) {
-            String fileName = new File(UriReader.GetPath(this.mainActivity, uri)).getName();
+            String fileName = new File(UriReader.GetPath(getActivity(), uri)).getName();
 
             if(fileName.equals(deleteFileName)) {
                 uploadFiles.remove(uri);
@@ -168,7 +189,7 @@ public class UploadFileFragment extends Fragment {
             }
         };
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.mainActivity);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Remove file from list?")
                 .setPositiveButton("Yes", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener)
@@ -179,16 +200,17 @@ public class UploadFileFragment extends Fragment {
         ArrayList<String> filePaths = new ArrayList<>();
 
         for(Uri uri : uploadFiles) {
-            filePaths.add(UriReader.GetPath(this.mainActivity, uri));
+            filePaths.add(UriReader.GetPath(getActivity(), uri));
         }
 
         return filePaths.toArray(new String[uploadFiles.size()]);
     }
 
     public void uploadFiles() {
-        dialog = ProgressDialog.show(this.mainActivity, "", "Uploading file...", true);
+        dialog = ProgressDialog.show(getActivity(), "", getString(R.string.progress_upload_file) , true);
         new Thread(new Runnable() {
             public void run() {
+            MainActivity mainActivity = (MainActivity) getActivity();
             String pasteURL = "";
 
             try {
