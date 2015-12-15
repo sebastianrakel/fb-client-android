@@ -2,6 +2,7 @@ package eu.devunit.fb_client;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.graphics.Typeface;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
@@ -23,8 +24,12 @@ public class PostUploadActivity extends ActionBarActivity {
 
         mURL = getIntent().getExtras().getString("paste_url");
 
+        Typeface type = Typeface.createFromAsset(getAssets(),"fonts/DejaVuSansMono.ttf");
+
         TextView url_text_view = (TextView)findViewById(R.id.url_text);
+        url_text_view.setTypeface(type);
         url_text_view.setText(mURL);
+        url_text_view.setTextSize(16);
         url_text_view.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
