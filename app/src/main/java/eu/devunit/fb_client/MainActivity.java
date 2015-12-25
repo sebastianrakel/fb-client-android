@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -20,6 +21,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import eu.devunit.fb_client.filebin.FilebinClient;
+import eu.devunit.fb_client.fragments.BackgroundFragment;
 import eu.devunit.fb_client.fragments.HistoryFragment;
 import eu.devunit.fb_client.fragments.TestFragment;
 import eu.devunit.fb_client.fragments.UploadFileFragment;
@@ -37,10 +39,9 @@ public class MainActivity extends ActionBarActivity
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
     private NavigationDrawerFragment mNavigationDrawerFragment;
-
     private Fragment activeFragment;
-
-    private FilebinClient fbClient;
+    private static final String TAG_BACKGROUND_FRAGMENT = "background_fragment";
+    private BackgroundFragment mBackgroundFragment;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -50,7 +51,17 @@ public class MainActivity extends ActionBarActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+
+        mBackgroundFragment = (BackgroundFragment) getSupportFragmentManager().findFragmentByTag(TAG_BACKGROUND_FRAGMENT);
+
+        if (mBackgroundFragment == null) {
+            mBackgroundFragment = new BackgroundFragment();
+            loadFilebinClient();
+
+            getSupportFragmentManager().beginTransaction().add(mBackgroundFragment, TAG_BACKGROUND_FRAGMENT).commit();
+        }
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -60,8 +71,6 @@ public class MainActivity extends ActionBarActivity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-
-        initFilebinClient();
 
         setFragment(0);
 
@@ -87,7 +96,7 @@ public class MainActivity extends ActionBarActivity
     }
 
     public FilebinClient getFbClient() {
-        return fbClient;
+        return mBackgroundFragment.getFilebinClient();
     }
 
     public void setFragment(int position) {
@@ -210,24 +219,7 @@ public class MainActivity extends ActionBarActivity
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent,"Select Files"), 1);
-    }
-
-    private void initFilebinClient() {
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-
-        String apikey = settings.getString("apikey", "");
-        String hostname = settings.getString("hostname", getString(R.string.pref_default_hostname_display_name));
-
-        fbClient = new FilebinClient();
-
-        try {
-            fbClient.setHostURI(new URI(hostname));
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        fbClient.setApikey(apikey);
+        startActivityForResult(Intent.createChooser(intent, "Select Files"), 1);
     }
 
     public void openPostUpload(String pasteURL) {
@@ -236,5 +228,21 @@ public class MainActivity extends ActionBarActivity
         MainActivity.this.startActivity(intent);
     }
 
+    public void loadFilebinClient() {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
 
+        String apikey = settings.getString("apikey", "");
+        String hostname = settings.getString("hostname", getString(R.string.pref_default_hostname_display_name));
+
+        FilebinClient filebinClient = new FilebinClient();
+
+        try {
+            filebinClient.setHostURI(new URI(hostname));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        filebinClient.setApikey(apikey);
+        mBackgroundFragment.setFilebinClient(filebinClient);
+    }
 }

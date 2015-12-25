@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -19,6 +20,10 @@ import java.util.ArrayList;
 
 import eu.devunit.fb_client.MainActivity;
 import eu.devunit.fb_client.R;
+import eu.devunit.fb_client.filebin.FilebinAsyncUploader;
+import eu.devunit.fb_client.filebin.FilebinClient;
+import eu.devunit.fb_client.filebin.UploadProgress;
+import eu.devunit.fb_client.filebin.UploadResult;
 import eu.devunit.fb_client.filebin.UriReader;
 
 
@@ -66,10 +71,11 @@ public class UploadFileFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         if (getArguments() != null) {
             InitUploadList();
         }
+
+
     }
 
     @Override
@@ -92,6 +98,10 @@ public class UploadFileFragment extends Fragment {
                 return true;
             }
         });
+
+        dialog = null;
+
+        initUploader();
 
         return view;
     }
@@ -207,22 +217,62 @@ public class UploadFileFragment extends Fragment {
     }
 
     public void uploadFiles() {
-        dialog = ProgressDialog.show(getActivity(), "", getString(R.string.progress_upload_file) , true);
-        new Thread(new Runnable() {
-            public void run() {
-            MainActivity mainActivity = (MainActivity) getActivity();
-            String pasteURL = "";
+        final MainActivity mainActivity = (MainActivity) getActivity();
+        mainActivity.getFbClient().uploadFile(getUploadFilePaths());
 
-            try {
-                pasteURL = mainActivity.getFbClient().uploadFile(getUploadFilePaths());
+        dialog = ProgressDialog.show(getActivity(), "", getString(R.string.progress_upload_file), true);
+    }
+
+    private void initUploader() {
+        final MainActivity mainActivity = (MainActivity) getActivity();
+
+        if(mainActivity.getFbClient() == null) {
+            return;
+        }
+
+        FilebinAsyncUploader uploader = mainActivity.getFbClient().getAsyncUploader();
+
+        if(uploader.is_uploading()) {
+            dialog = ProgressDialog.show(getActivity(), "", getString(R.string.progress_upload_file), true);
+        }
+
+        FilebinAsyncUploader.UploadProgressCallback uploadProgressCallback = new FilebinAsyncUploader.UploadProgressCallback() {
+            @Override
+            public void progress(UploadProgress progress) {
+                if(dialog != null) {
+                    dialog.setMax((int)progress.get_totalSizeBytes());
+                    dialog.setProgress((int) progress.get_uploadedBytes());
+                } else {
+                    //showProgress();
+                }
+            }
+        };
+
+        FilebinAsyncUploader.UploadResultCallback uploadResultCallback = new FilebinAsyncUploader.UploadResultCallback() {
+            @Override
+            public void result(UploadResult result) {
                 ClearUploadList();
-            } catch (Exception e) {
-                e.printStackTrace();
+                mainActivity.openPostUpload(result.get_pasteURL());
+                if(dialog != null) {
+                    dialog.dismiss();
+                    dialog = null;
+                }
             }
-            dialog.dismiss();
+        };
 
-            mainActivity.openPostUpload(pasteURL);
-            }
-        }).start();
+        uploader.set_uploadProgressCallback(uploadProgressCallback);
+        uploader.set_uploadResultCallback(uploadResultCallback);
+
+
+    }
+
+    private void showProgress() {
+        final MainActivity mainActivity = (MainActivity) getActivity();
+
+        FilebinAsyncUploader uploader = mainActivity.getFbClient().getAsyncUploader();
+
+        if(uploader.is_uploading() && dialog == null) {
+            dialog = ProgressDialog.show(getActivity(), "", getString(R.string.progress_upload_file), true);
+        }
     }
 }

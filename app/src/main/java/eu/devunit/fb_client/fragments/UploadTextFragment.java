@@ -101,7 +101,7 @@ public class UploadTextFragment extends Fragment {
                 String pasteURL = "";
 
                 try {
-                    pasteURL = mainActivity.getFbClient().uploadText(pasteText);
+                    mainActivity.getFbClient().uploadText(pasteText);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -28,42 +28,42 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-/**
- * Created by sebastian on 1/4/15.
- */
 public class FilebinClient {
-    private static String Version = "0.1";
-    private static String UserAgent = "fb-client-android/" + Version;
+    private static String sVersion = "0.2";
+    private static String sUserAgent = "fb-client-android/" + sVersion;
 
-    private static String ApiVersion = "v1.0.0";
+    private static String sApiVersion = "v1.0.0";
 
-    private URI HostURI;
-    private String Apikey;
+    private URI mHostURI;
+    private String mApikey;
 
+    private FilebinAsyncUploader mUploader;
 
     public URI getHostURI() {
-        return HostURI;
+        return mHostURI;
     }
 
     public void setHostURI(URI hostURI) {
-        HostURI = hostURI;
+        mHostURI = hostURI;
     }
 
     public String getApikey() {
-        return Apikey;
+        return mApikey;
     }
 
     public void setApikey(String apikey) {
-        Apikey = apikey;
+        mApikey = apikey;
     }
 
-
+    public String getUserAgent() {
+        return sUserAgent;
+    }
 
     public String generateApikey(String username, String password, String comment) {
         HttpClient httpClient = getHttpsClient(new DefaultHttpClient());
-        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, UserAgent);
+        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, sUserAgent);
 
-        HttpPost httpPost = new HttpPost(HostURI.toString() + "/user/create_apikey");
+        HttpPost httpPost = new HttpPost(mHostURI.toString() + "/user/create_apikey");
 
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
@@ -95,70 +95,32 @@ public class FilebinClient {
     }
 
     private String getApiUri() {
-        return HostURI.toString() + "/api/" + ApiVersion;
+        return mHostURI.toString() + "/api/" + sApiVersion;
     }
 
-    public String uploadText(String text) {
-        return uploadFile(getFileFromText(text));
+    public void uploadText(String text) {
+        uploadFile(getFileFromText(text));
     }
 
-    public String uploadFile(String filename) {
-        return uploadFile(new String[]{filename});
+    public void uploadFile(String filename) {
+        uploadFile(new String[]{filename});
     }
 
-    public String uploadFile(String[] filenames) {
-        HttpClient httpClient = getHttpsClient(new DefaultHttpClient());
-        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, UserAgent);
+    public void uploadFile(String[] filenames) {
+        getAsyncUploader().execute(filenames);
+    }
 
-        HttpPost httpPost;
-        httpPost = new HttpPost(HostURI.toString() + "/file/do_upload");
-
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-
-        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-
-        builder.addTextBody("apikey", getApikey());
-
-        boolean is_multipaste = filenames.length > 1;
-
-        if(is_multipaste) {
-            builder.addTextBody("multipaste","true");
+    public FilebinAsyncUploader getAsyncUploader() {
+        if(mUploader == null) {
+            mUploader = new FilebinAsyncUploader(this);
         }
 
-        for(int i=0; i<filenames.length; i++) {
-
-            String filename = filenames[i];
-            File file = new File(filename);
-            FileBody fb = new FileBody(file);
-            builder.addPart("file[" + i + "]", fb);
-        }
-
-        HttpEntity httpEntity = builder.build();
-
-        //ProgressiveEntity myEntity = new ProgressiveEntity();
-
-        httpPost.setEntity(httpEntity);
-        HttpResponse response = null;
-        String content = "";
-
-        try {
-            response = httpClient.execute(httpPost);
-            content = FilebinClient.getContent(response);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if(is_multipaste) {
-            String[] fileNames = content.split(" ");
-            return fileNames[fileNames.length - 1];
-        } else {
-            return content;
-        }
+        return mUploader;
     }
 
     public HistoryAnswer getHistory() {
         HttpClient httpClient = getHttpsClient(new DefaultHttpClient());
-        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, UserAgent);
+        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, sUserAgent);
 
         HttpPost httpPost;
         httpPost = new HttpPost(getApiUri() + "/file/history");
@@ -190,7 +152,7 @@ public class FilebinClient {
         return null;
     }
 
-    private static String getContent(HttpResponse response) throws IOException {
+    protected static String getContent(HttpResponse response) throws IOException {
         BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
         String body = "";
         String content = "";
