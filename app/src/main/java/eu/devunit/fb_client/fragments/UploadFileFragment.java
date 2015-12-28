@@ -7,7 +7,9 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 
 import eu.devunit.fb_client.MainActivity;
 import eu.devunit.fb_client.R;
+import eu.devunit.fb_client.filebin.FileSizeInfo;
 import eu.devunit.fb_client.filebin.FilebinAsyncUploader;
 import eu.devunit.fb_client.filebin.FilebinClient;
 import eu.devunit.fb_client.filebin.UploadProgress;
@@ -220,7 +223,7 @@ public class UploadFileFragment extends Fragment {
         final MainActivity mainActivity = (MainActivity) getActivity();
         mainActivity.getFbClient().uploadFile(getUploadFilePaths());
 
-        dialog = ProgressDialog.show(getActivity(), "", getString(R.string.progress_upload_file), true);
+        //initProgressbar();
     }
 
     private void initUploader() {
@@ -232,18 +235,35 @@ public class UploadFileFragment extends Fragment {
 
         FilebinAsyncUploader uploader = mainActivity.getFbClient().getAsyncUploader();
 
-        if(uploader.is_uploading()) {
-            dialog = ProgressDialog.show(getActivity(), "", getString(R.string.progress_upload_file), true);
-        }
+//        if(uploader.is_uploading()) {
+//            initProgressbar();
+//        }
+
+        uploader.set_uploadProgressCallback(null);
+        uploader.set_uploadResultCallback(null);
 
         FilebinAsyncUploader.UploadProgressCallback uploadProgressCallback = new FilebinAsyncUploader.UploadProgressCallback() {
             @Override
             public void progress(UploadProgress progress) {
+                final UploadProgress fProgress = progress;
+                //final int percent = (int) (progress.get_uploadedBytes() * 100 / progress.get_totalSizeBytes());
                 if(dialog != null) {
-                    dialog.setMax((int)progress.get_totalSizeBytes());
-                    dialog.setProgress((int) progress.get_uploadedBytes());
+//                    getActivity().runOnUiThread(new Runnable() {
+//                        public void run() {
+//                            dialog.setMax(100);
+//                            dialog.setProgress(progress.get_uploadedBytes());
+//                        }
+//                    });
+                    FileSizeInfo maxSizeInfo = FileSizeInfo.getHumanReadableSizeInfo(progress.get_totalSizeBytes(), false);
+                    FileSizeInfo uploadedSizeInfo = FileSizeInfo.getHumanReadableSizeInfo(progress.get_uploadedBytes(), false);
+
+                    dialog.setMax(maxSizeInfo.getSize());
+                    dialog.setProgress(uploadedSizeInfo.getSize());
+                    dialog.setProgressNumberFormat("%1d " + uploadedSizeInfo.getSizeUnit() + " / %2d " + maxSizeInfo.getSizeUnit());
+                    //Log.i("Progress", String.valueOf(percent));
+
                 } else {
-                    //showProgress();
+                    initProgressbar();
                 }
             }
         };
@@ -271,8 +291,18 @@ public class UploadFileFragment extends Fragment {
 
         FilebinAsyncUploader uploader = mainActivity.getFbClient().getAsyncUploader();
 
-        if(uploader.is_uploading() && dialog == null) {
-            dialog = ProgressDialog.show(getActivity(), "", getString(R.string.progress_upload_file), true);
-        }
+//        if(uploader.is_uploading() && dialog == null) {
+//            initProgressbar();
+//        }
+
+    }
+
+    private void initProgressbar() {
+        dialog = new ProgressDialog(getActivity());
+        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        dialog.setMessage(getString(R.string.progress_upload_file));
+        dialog.setIndeterminate(false);
+        dialog.setCancelable(false);
+        dialog.show();
     }
 }

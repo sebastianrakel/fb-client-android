@@ -91,7 +91,8 @@ public class FilebinAsyncUploader extends AsyncTask<String[], UploadProgress, Up
         ProgressHttpEntityWrapper.ProgressCallback progressCallback = new ProgressHttpEntityWrapper.ProgressCallback() {
             @Override
             public void progress(UploadProgress progress) {
-                onProgressUpdate(progress);
+                publishProgress(progress);
+                //onProgressUpdate(progress);
             }
         };
 
@@ -121,6 +122,10 @@ public class FilebinAsyncUploader extends AsyncTask<String[], UploadProgress, Up
         }
 
         return result;
+    }
+
+    protected void onProgressUpdate(UploadProgress... progress) {
+        _uploadProgressCallback.progress(progress[0]);
     }
 
     protected void onProgressUpdate(UploadProgress progress) {
