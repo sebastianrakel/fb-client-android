@@ -29,15 +29,6 @@ import eu.devunit.fb_client.filebin.UploadProgress;
 import eu.devunit.fb_client.filebin.UploadResult;
 import eu.devunit.fb_client.filebin.UriReader;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link UploadFileFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link UploadFileFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class UploadFileFragment extends Fragment {
     private static final String ARG_POSITION = "position";
 
@@ -51,13 +42,6 @@ public class UploadFileFragment extends Fragment {
     ArrayList<String> uploadFileNames;
     ArrayAdapter<String> uploadFileAdapter;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param position Position
-     * @return A new instance of fragment UploadFileFragment.
-     */
     public static UploadFileFragment newInstance(int position) {
         UploadFileFragment fragment = new UploadFileFragment();
         Bundle args = new Bundle();
@@ -127,16 +111,6 @@ public class UploadFileFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         public void onFragmentInteraction(Uri uri);
     }
@@ -222,8 +196,6 @@ public class UploadFileFragment extends Fragment {
     public void uploadFiles() {
         final MainActivity mainActivity = (MainActivity) getActivity();
         mainActivity.getFbClient().uploadFile(getUploadFilePaths());
-
-        //initProgressbar();
     }
 
     private void initUploader() {
@@ -235,36 +207,22 @@ public class UploadFileFragment extends Fragment {
 
         FilebinAsyncUploader uploader = mainActivity.getFbClient().getAsyncUploader();
 
-//        if(uploader.is_uploading()) {
-//            initProgressbar();
-//        }
-
         uploader.set_uploadProgressCallback(null);
         uploader.set_uploadResultCallback(null);
 
         FilebinAsyncUploader.UploadProgressCallback uploadProgressCallback = new FilebinAsyncUploader.UploadProgressCallback() {
             @Override
             public void progress(UploadProgress progress) {
-                final UploadProgress fProgress = progress;
-                //final int percent = (int) (progress.get_uploadedBytes() * 100 / progress.get_totalSizeBytes());
-                if(dialog != null) {
-//                    getActivity().runOnUiThread(new Runnable() {
-//                        public void run() {
-//                            dialog.setMax(100);
-//                            dialog.setProgress(progress.get_uploadedBytes());
-//                        }
-//                    });
-                    FileSizeInfo maxSizeInfo = FileSizeInfo.getHumanReadableSizeInfo(progress.get_totalSizeBytes(), false);
-                    FileSizeInfo uploadedSizeInfo = FileSizeInfo.getHumanReadableSizeInfo(progress.get_uploadedBytes(), false);
+            if(dialog != null) {
+                FileSizeInfo maxSizeInfo = FileSizeInfo.getHumanReadableSizeInfo(progress.get_totalSizeBytes(), false);
+                FileSizeInfo uploadedSizeInfo = FileSizeInfo.getHumanReadableSizeInfo(progress.get_uploadedBytes(), false);
 
-                    dialog.setMax(maxSizeInfo.getSize());
-                    dialog.setProgress(uploadedSizeInfo.getSize());
-                    dialog.setProgressNumberFormat("%1d " + uploadedSizeInfo.getSizeUnit() + " / %2d " + maxSizeInfo.getSizeUnit());
-                    //Log.i("Progress", String.valueOf(percent));
-
-                } else {
-                    initProgressbar();
-                }
+                dialog.setMax(maxSizeInfo.getSize());
+                dialog.setProgress(uploadedSizeInfo.getSize());
+                dialog.setProgressNumberFormat("%1d " + uploadedSizeInfo.getSizeUnit() + " / %2d " + maxSizeInfo.getSizeUnit());
+            } else {
+                initProgressbar();
+            }
             }
         };
 
@@ -282,19 +240,6 @@ public class UploadFileFragment extends Fragment {
 
         uploader.set_uploadProgressCallback(uploadProgressCallback);
         uploader.set_uploadResultCallback(uploadResultCallback);
-
-
-    }
-
-    private void showProgress() {
-        final MainActivity mainActivity = (MainActivity) getActivity();
-
-        FilebinAsyncUploader uploader = mainActivity.getFbClient().getAsyncUploader();
-
-//        if(uploader.is_uploading() && dialog == null) {
-//            initProgressbar();
-//        }
-
     }
 
     private void initProgressbar() {
