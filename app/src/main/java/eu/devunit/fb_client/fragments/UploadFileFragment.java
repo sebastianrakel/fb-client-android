@@ -88,7 +88,7 @@ public class UploadFileFragment extends Fragment {
 
         dialog = null;
 
-        initUploader();
+        attachToUploader();
 
         return view;
     }
@@ -196,9 +196,11 @@ public class UploadFileFragment extends Fragment {
     public void uploadFiles() {
         final MainActivity mainActivity = (MainActivity) getActivity();
         mainActivity.getFbClient().uploadFile(getUploadFilePaths());
+
+        attachToUploader();
     }
 
-    private void initUploader() {
+    private void attachToUploader() {
         final MainActivity mainActivity = (MainActivity) getActivity();
 
         if(mainActivity.getFbClient() == null) {
@@ -206,6 +208,10 @@ public class UploadFileFragment extends Fragment {
         }
 
         FilebinAsyncUploader uploader = mainActivity.getFbClient().getAsyncUploader();
+
+        if(uploader == null) {
+            return;
+        }
 
         uploader.set_uploadProgressCallback(null);
         uploader.set_uploadResultCallback(null);

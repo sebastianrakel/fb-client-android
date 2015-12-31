@@ -107,15 +107,20 @@ public class FilebinClient {
     }
 
     public void uploadFile(String[] filenames) {
+        createNewAsyncUploader(true);
         getAsyncUploader().execute(filenames);
     }
 
     public FilebinAsyncUploader getAsyncUploader() {
-        if(mUploader == null) {
-            mUploader = new FilebinAsyncUploader(this);
+        return mUploader;
+    }
+
+    public void createNewAsyncUploader(boolean force) {
+        if(mUploader != null && !force) {
+            return;
         }
 
-        return mUploader;
+        mUploader = new FilebinAsyncUploader(this);
     }
 
     public HistoryAnswer getHistory() {
