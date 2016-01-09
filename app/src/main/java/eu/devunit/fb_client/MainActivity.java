@@ -77,8 +77,16 @@ public class MainActivity extends ActionBarActivity
         Bundle bundle = getIntent().getExtras();
 
         if(getIntent().getAction() == Intent.ACTION_SEND) {
-            Uri uri = (Uri)bundle.get(Intent.EXTRA_STREAM);
-            ((UploadFileFragment) activeFragment).AddFileToUploadList(uri);
+            switch (getIntent().getType()) {
+                case "text/plain":
+                    String uploadText = bundle.getString(Intent.EXTRA_TEXT);
+                    setFragment(1);
+                    ((UploadTextFragment) activeFragment).setUploadText(uploadText);
+                    break;
+                default:
+                    Uri uri = (Uri)bundle.get(Intent.EXTRA_STREAM);
+                    ((UploadFileFragment) activeFragment).AddFileToUploadList(uri);
+            }
         }
 
         if (getIntent().getAction() == Intent.ACTION_SEND_MULTIPLE) {
