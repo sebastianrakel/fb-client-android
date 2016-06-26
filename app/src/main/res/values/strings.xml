@@ -14,8 +14,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="title_activity_test">testActivity</string>
 
-    <string name="hello_world">Hello world!</string>
-
     <string name="progress_upload_file">Uploading file(s)...</string>
     <string name="progress_upload_text">Uploading text...</string>
     <string name="progress_history">Loading history...</string>
@@ -23,7 +21,4 @@
     <string name="button_upload_files">Upload File(s)</string>
     <string name="button_add_file">Add File</string>
     <string name="button_upload_text">Upload Text</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
