@@ -24,7 +24,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import eu.devunit.fb_client.filebin.Answer.CreateApikeyAnswer;
 import eu.devunit.fb_client.filebin.FilebinClient;
+import eu.devunit.fb_client.filebin.FilebinException;
 
 
 /**
@@ -202,8 +204,16 @@ public class LoginActivity extends Activity {
 
                 filebinClient.setHostURI(new URI(mHostname));
 
-                String apikey = filebinClient.generateApikey(mUsername, mPassword, android.os.Build.MODEL);
-                return apikey;
+                CreateApikeyAnswer createApiAnswer = null;
+                try {
+                    createApiAnswer = filebinClient.generateApikey(mUsername, mPassword, Build.MODEL);
+                    String apikey = createApiAnswer.getNewApiKey();
+                    return apikey;
+                } catch (FilebinException e) {
+                    e.printStackTrace();
+
+                    return e.getErrorAnswer().getMessage();
+                }
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }

@@ -14,9 +14,10 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.CoreProtocolPNames;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,10 +25,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+
+import eu.devunit.fb_client.filebin.Answer.Base.ErrorAnswer;
+import eu.devunit.fb_client.filebin.Answer.CreateApikeyAnswer;
+import eu.devunit.fb_client.filebin.Answer.HistoryAnswer;
+import eu.devunit.fb_client.filebin.Answer.Base.IAnswer;
+import eu.devunit.fb_client.filebin.Answer.Base.SuccessAnswer;
 
 public class FilebinClient {
     private static String sVersion = BuildConfig.VERSION_NAME;
@@ -60,42 +69,7 @@ public class FilebinClient {
         return sUserAgent;
     }
 
-    public String generateApikey(String username, String password, String comment) {
-        HttpClient httpClient = getHttpsClient(new DefaultHttpClient());
-        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, sUserAgent);
-
-        HttpPost httpPost = new HttpPost(mHostURI.toString() + "/user/create_apikey");
-
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-
-        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-
-        builder.addTextBody("username", username);
-        builder.addTextBody("password", password);
-
-        if(!comment.isEmpty()) {
-            builder.addTextBody("comment", comment);
-        }
-
-        HttpEntity httpEntity = builder.build();
-
-        //ProgressiveEntity myEntity = new ProgressiveEntity();
-
-        httpPost.setEntity(httpEntity);
-        HttpResponse response = null;
-        String content = "";
-
-        try {
-            response = httpClient.execute(httpPost);
-            content = FilebinClient.getContent(response);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return content;
-    }
-
-    private String getApiUri() {
+    public String getApiUri() {
         return mHostURI.toString() + "/api/" + sApiVersion;
     }
 
@@ -107,13 +81,33 @@ public class FilebinClient {
         uploadFile(new String[]{filename});
     }
 
+    public FilebinAsyncUploader getAsyncUploader() {
+        return mUploader;
+    }
+
+    public CreateApikeyAnswer generateApikey(String username, String password, String comment) throws FilebinException {
+        HashMap<String, String> parameters = new HashMap<>();
+
+        parameters.put("username", username);
+        parameters.put("password", password);
+        parameters.put("access_level", "apikey");
+
+        if(!comment.isEmpty()) {
+            parameters.put("comment", comment);
+        }
+
+        IAnswer answer = getFilebinApiAnswer("/user/create_apikey", parameters);
+
+        if(answer.isSuccess()) {
+            return ((SuccessAnswer) answer).getAnswerAs(CreateApikeyAnswer.class);
+        } else {
+            throw new FilebinException(answer);
+        }
+    }
+
     public void uploadFile(String[] filenames) {
         createNewAsyncUploader(true);
         getAsyncUploader().execute(filenames);
-    }
-
-    public FilebinAsyncUploader getAsyncUploader() {
-        return mUploader;
     }
 
     public void createNewAsyncUploader(boolean force) {
@@ -124,38 +118,17 @@ public class FilebinClient {
         mUploader = new FilebinAsyncUploader(this);
     }
 
-    public HistoryAnswer getHistory() {
-        HttpClient httpClient = getHttpsClient(new DefaultHttpClient());
-        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, sUserAgent);
+    public HistoryAnswer getHistory() throws FilebinException {
+        HashMap<String, String> parameters = new HashMap<>();
+        parameters.put("apikey", getApikey() );
 
-        HttpPost httpPost;
-        httpPost = new HttpPost(getApiUri() + "/file/history");
+        IAnswer answer = getFilebinApiAnswer("/file/history", parameters);
 
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-
-        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-
-        builder.addTextBody("apikey", getApikey());
-
-        HttpEntity httpEntity = builder.build();
-
-        httpPost.setEntity(httpEntity);
-        HttpResponse response = null;
-        String content = "";
-
-        try {
-            response = httpClient.execute(httpPost);
-            content = FilebinClient.getContent(response);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(answer.isSuccess()) {
+            return ((SuccessAnswer) answer).getAnswerAs(HistoryAnswer.class);
+        } else {
+            throw new FilebinException(answer);
         }
-
-        if(content.length() > 0) {
-            HistoryAnswer historyAnswer = new HistoryAnswer(content);
-            return historyAnswer;
-        }
-
-        return null;
     }
 
     protected static String getContent(HttpResponse response) throws IOException {
@@ -190,6 +163,66 @@ public class FilebinClient {
         }
 
         return "";
+    }
+
+    public IAnswer getFilebinApiAnswer(String endpoint, HashMap<String, String> parameters) {
+        HttpClient httpClient = getHttpsClient(new DefaultHttpClient());
+        httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, sUserAgent);
+
+        HttpPost httpPost;
+        httpPost = new HttpPost(getApiUri() + endpoint);
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+
+        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+
+        for(Map.Entry<String, String> entry : parameters.entrySet()) {
+            builder.addTextBody(entry.getKey(), entry.getValue());
+        }
+
+        HttpEntity httpEntity = builder.build();
+
+        httpPost.setEntity(httpEntity);
+        HttpResponse response = null;
+        String content = "";
+
+        try {
+            response = httpClient.execute(httpPost);
+            content = getContent(response);
+
+            return getApiAnswer(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    protected static IAnswer getApiAnswer(String raw) {
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(raw);
+
+            String status = jsonObject.getString("status");
+
+            if(status.equalsIgnoreCase("success")) {
+                SuccessAnswer successAnswer = new SuccessAnswer();
+                successAnswer.setData(jsonObject.getJSONObject("data"));
+
+                return successAnswer;
+            } else {
+                ErrorAnswer errorAnswer = new ErrorAnswer();
+
+                errorAnswer.setData(jsonObject.getJSONObject("data"));
+                errorAnswer.setMessage(jsonObject.getString("message"));
+                errorAnswer.setErrorId(jsonObject.getString("error_id"));
+
+                return errorAnswer;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static HttpClient getHttpsClient(HttpClient client) {

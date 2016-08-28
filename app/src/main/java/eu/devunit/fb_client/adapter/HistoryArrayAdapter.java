@@ -11,16 +11,17 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import eu.devunit.fb_client.R;
-import eu.devunit.fb_client.filebin.HistoryItem;
+import eu.devunit.fb_client.filebin.History.FlatHistoryItem;
+import eu.devunit.fb_client.filebin.History.HistoryItem;
 
 /**
  * Created by sebastian on 2/26/15.
  */
-public class HistoryArrayAdapter extends ArrayAdapter<HistoryItem> {
+public class HistoryArrayAdapter extends ArrayAdapter<FlatHistoryItem> {
     private final Context context;
-    private final List<HistoryItem> objects;
+    private final List<FlatHistoryItem> objects;
 
-    public HistoryArrayAdapter(Context context, int resource, List<HistoryItem> objects) {
+    public HistoryArrayAdapter(Context context, int resource, List<FlatHistoryItem> objects) {
         super(context, resource, objects);
 
         this.context = context;
@@ -40,7 +41,7 @@ public class HistoryArrayAdapter extends ArrayAdapter<HistoryItem> {
         TextView date_textView = (TextView) rowView.findViewById(R.id.date);
         TextView size_textView = (TextView) rowView.findViewById(R.id.filesize);
 
-        HistoryItem historyItem = (HistoryItem) objects.get(position);
+        FlatHistoryItem historyItem = (FlatHistoryItem) objects.get(position);
 
         id_textView.setText(historyItem.getId());
         filename_textView.setText(historyItem.getFilename());

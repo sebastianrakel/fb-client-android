@@ -1,14 +1,11 @@
-package eu.devunit.fb_client.filebin;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+package eu.devunit.fb_client.filebin.History;
 
 import java.util.Date;
 
 /**
- * Created by sebastian on 2/23/15.
+ * Created by sebastian on 8/28/16.
  */
-public class HistoryItem implements Comparable<HistoryItem> {
+public class FlatHistoryItem implements Comparable<FlatHistoryItem> {
     private String id;
     private String filename;
     private String mimetype;
@@ -16,17 +13,18 @@ public class HistoryItem implements Comparable<HistoryItem> {
     private String hash;
     private int filesize;
 
-    public HistoryItem(JSONObject jsonObject) {
-        try {
-            this.id = jsonObject.getString("id");
-            this.filename = jsonObject.getString("filename");
-            this.mimetype = jsonObject.getString("mimetype");
-            this.date = jsonObject.getLong("date");
-            this.hash = jsonObject.getString("hash");
-            this.filesize = jsonObject.getInt("filesize");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+
+    public FlatHistoryItem(HistoryMultipaste historyMultipaste) {
+        this.id = historyMultipaste.getUrlId();
+        this.date = historyMultipaste.getDate();
+    }
+
+    public FlatHistoryItem(HistoryItem historyItem) {
+        this.id = historyItem.getId();
+        this.filename = historyItem.getFilename();
+        this.mimetype = historyItem.getMimetype();
+        this.date = historyItem.getDate();
+        this.filesize = historyItem.getFilesize();
     }
 
     public String getId() {
@@ -72,7 +70,7 @@ public class HistoryItem implements Comparable<HistoryItem> {
     }
 
     @Override
-    public int compareTo(HistoryItem historyItem) {
-        return historyItem.getHumanReadableDate().compareTo(getHumanReadableDate());
+    public int compareTo(FlatHistoryItem flatHistoryItem) {
+        return flatHistoryItem.getHumanReadableDate().compareTo(getHumanReadableDate());
     }
 }

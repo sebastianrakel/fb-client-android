@@ -6,6 +6,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
@@ -14,6 +15,12 @@ import org.apache.http.params.CoreProtocolPNames;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+
+import eu.devunit.fb_client.filebin.Answer.Base.IAnswer;
+import eu.devunit.fb_client.filebin.Answer.Base.SuccessAnswer;
+import eu.devunit.fb_client.filebin.Answer.FileMultipasteAnswer;
+import eu.devunit.fb_client.filebin.Answer.FileUploadAnswer;
 
 public class FilebinAsyncUploader extends AsyncTask<String[], UploadProgress, UploadResult> {
     public static interface UploadProgressCallback {
@@ -64,7 +71,7 @@ public class FilebinAsyncUploader extends AsyncTask<String[], UploadProgress, Up
         httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, get_filebinClient().getUserAgent());
 
         HttpPost httpPost;
-        httpPost = new HttpPost(get_filebinClient().getHostURI().toString() + "/file/do_upload");
+        httpPost = new HttpPost(get_filebinClient().getApiUri() + "/file/upload");
 
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
@@ -106,22 +113,40 @@ public class FilebinAsyncUploader extends AsyncTask<String[], UploadProgress, Up
 
             response = httpClient.execute(httpPost);
             content = FilebinClient.getContent(response);
+
+            IAnswer answer =  FilebinClient.getApiAnswer(content);
+
+            if(answer.isSuccess()) {
+                FileUploadAnswer fileUploadAnswer = ((SuccessAnswer) answer).getAnswerAs(FileUploadAnswer.class);
+                UploadResult uploadResult = new UploadResult();
+
+                if(is_multipaste) {
+                    HashMap<String, String> parameters = new HashMap<>();
+
+                    parameters.put("apikey", get_filebinClient().getApikey());
+
+                    for(int i = 0; i < fileUploadAnswer.getIds().length; i++) {
+                        parameters.put(String.format("ids[%s]", i), fileUploadAnswer.getIds()[i]);
+                    }
+                    FileMultipasteAnswer multipasteAnswer = ((SuccessAnswer) get_filebinClient().getFilebinApiAnswer("/file/create_multipaste", parameters)).getAnswerAs(FileMultipasteAnswer.class);
+
+                    uploadResult.set_pasteURL(multipasteAnswer.getUrl());
+                } else {
+                    uploadResult.set_pasteURL(fileUploadAnswer.getUrls()[0]);
+                }
+
+                return uploadResult;
+            } else {
+                throw new FilebinException(answer);
+            }
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (FilebinException e) {
             e.printStackTrace();
         } finally {
             _uploading = false;
         }
-
-        UploadResult result = new UploadResult();
-
-        if(is_multipaste) {
-            String[] fileNames = content.split(" ");
-            result.set_pasteURL(fileNames[fileNames.length - 1]);
-        } else {
-            result.set_pasteURL(content);
-        }
-
-        return result;
+        return null;
     }
 
     protected void onProgressUpdate(UploadProgress... progress) {

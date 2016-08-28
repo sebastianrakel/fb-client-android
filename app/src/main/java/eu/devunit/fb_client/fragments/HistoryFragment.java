@@ -20,8 +20,9 @@ import java.util.ArrayList;
 import eu.devunit.fb_client.MainActivity;
 import eu.devunit.fb_client.R;
 import eu.devunit.fb_client.adapter.HistoryArrayAdapter;
-import eu.devunit.fb_client.filebin.HistoryAnswer;
-import eu.devunit.fb_client.filebin.HistoryItem;
+import eu.devunit.fb_client.filebin.Answer.HistoryAnswer;
+import eu.devunit.fb_client.filebin.History.FlatHistoryItem;
+import eu.devunit.fb_client.filebin.History.HistoryItem;
 
 /**
  * A fragment representing a list of Items.
@@ -38,7 +39,7 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
     private static final String ARG_POSITION = "position";
 
     private int mPosition;
-    private ArrayList<HistoryItem> items;
+    private ArrayList<FlatHistoryItem> items;
 
     private ProgressDialog dialog = null;
 
@@ -78,7 +79,7 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
         }
 
 
-        items = new ArrayList<HistoryItem>();
+        items = new ArrayList<FlatHistoryItem>();
         mAdapter = new HistoryArrayAdapter(getActivity(), R.layout.history_listview_item, items);
 
         getHistory();
@@ -93,7 +94,7 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
                 try {
                     HistoryAnswer historyAnswer = mainActivity.getFbClient().getHistory();
 
-                    for(HistoryItem historyItem : historyAnswer.getItems()) {
+                    for(FlatHistoryItem historyItem : historyAnswer.getFlatHistory()) {
                         items.add(historyItem);
                     }
 
@@ -151,7 +152,7 @@ public class HistoryFragment extends Fragment implements AbsListView.OnItemClick
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
-            HistoryItem historyItem = items.get(position);
+            FlatHistoryItem historyItem = items.get(position);
             MainActivity mainActivity = (MainActivity) getActivity();
 
             String url = mainActivity.getFbClient().getHostURI() + "/" + historyItem.getId() + "/";
