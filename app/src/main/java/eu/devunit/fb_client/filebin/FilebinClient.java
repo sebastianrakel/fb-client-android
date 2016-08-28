@@ -2,6 +2,7 @@ package eu.devunit.fb_client.filebin;
 
 import android.os.Environment;
 
+import org.apache.http.BuildConfig;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -29,10 +30,10 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 public class FilebinClient {
-    private static String sVersion = "0.2";
+    private static String sVersion = BuildConfig.VERSION_NAME;
     private static String sUserAgent = "fb-client-android/" + sVersion;
 
-    private static String sApiVersion = "v2.0.0";
+    private static String sApiVersion = "v2.1.0";
 
     private URI mHostURI;
     private String mApikey;
