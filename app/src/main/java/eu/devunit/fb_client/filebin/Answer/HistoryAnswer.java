@@ -35,7 +35,7 @@ public class HistoryAnswer extends SuccessAnswer {
             e.printStackTrace();
         }
 
-        return null;
+        return new ArrayList<>();
     }
 
     public ArrayList<HistoryMultipaste> getMultipasteItems() {
@@ -57,7 +57,7 @@ public class HistoryAnswer extends SuccessAnswer {
             e.printStackTrace();
         }
 
-        return null;
+        return new ArrayList<>();
     }
 
     public ArrayList<FlatHistoryItem> getFlatHistory() {
