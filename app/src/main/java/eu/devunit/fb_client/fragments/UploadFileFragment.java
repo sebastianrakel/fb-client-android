@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -195,9 +196,15 @@ public class UploadFileFragment extends Fragment {
 
     public void uploadFiles() {
         final MainActivity mainActivity = (MainActivity) getActivity();
-        mainActivity.getFbClient().uploadFile(getUploadFilePaths());
 
-        attachToUploader();
+        String[] uploadFiles = getUploadFilePaths();
+
+        if(uploadFiles.length > 0) {
+            mainActivity.getFbClient().uploadFile(getUploadFilePaths());
+            attachToUploader();
+        } else {
+            Toast.makeText(mainActivity.getApplicationContext(), "No file(s) provided", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void attachToUploader() {
