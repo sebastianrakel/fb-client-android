@@ -1,7 +1,6 @@
-# Filebin Client for Android
+du # Filebin Client for Android
 
 ## Release
-- Google Playstore: [fb-client Android @ google play store](https://play.google.com/store/apps/details?id=eu.devunit.fb_client)
 - F-Droid Store: [fb-client Android @ f-droid store](https://f-droid.org/repository/browse/?fdfilter=fb-client&fdid=eu.devunit.fb_client)
 
 ## Builds
