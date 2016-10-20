@@ -42,7 +42,7 @@ public class FilebinClient {
     private static String sVersion = BuildConfig.VERSION_NAME;
     private static String sUserAgent = "fb-client-android/" + sVersion;
 
-    private static String sApiVersion = "v2.1.0";
+    private static String sApiVersion = "v2.0.0";
 
     private URI mHostURI;
     private String mApikey;
