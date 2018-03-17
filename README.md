@@ -1,12 +1,7 @@
 du # Filebin Client for Android
 
 ## Release
-- F-Droid Store: [fb-client Android @ f-droid store](https://f-droid.org/repository/browse/?fdfilter=fb-client&fdid=eu.devunit.fb_client)
-
-## Builds
-
-- [latest successful development build](https://ci.devunit.eu/job/fb-android%20nightly/lastSuccessfulBuild/artifact/app/build/outputs/apk/app-debug-unaligned.apk)
-
+- F-Droid Store: [fb-client Android @ f-droid store](https://f-droid.org/packages/eu.devunit.fb_client/)
 
 ## Contribute
 Write an issue if something is not working correctly or you're missing something. 
