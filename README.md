@@ -1,16 +1,10 @@
-du # Filebin Client for Android
+# UNMAINTAINED Filebin Client for Android
 
-## Release
-- F-Droid Store: [fb-client Android @ f-droid store](https://f-droid.org/packages/eu.devunit.fb_client/)
+This client is deprecated, @notric developed a better client.
 
-## Contribute
-Write an issue if something is not working correctly or you're missing something. 
-also you can checkout the code and build pull requests with fixes or new features.
+So this client is not longer maintained.
 
-
-## Contact
-- **IRC** you can contact me (Spritzgebaeck) in #archlinux.de on freenode (only for freenode registered user)
-
+The new client is [FileBin-mobile](https://github.com/noctric/FileBin-mobile)
 
 ## Special Thanks for
 
